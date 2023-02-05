@@ -373,7 +373,7 @@ resource "aws_lb_target_group_attachment" "Miniproject-target-group-attachment1"
   target_id        = aws_instance.instance1.id
   port             = 80
 
-}
+]}
 
 resource "aws_lb_target_group_attachment" "Miniproject-target-group-attachment2" {
   target_group_arn = aws_lb_target_group.Miniproject-target-group.arn
@@ -388,34 +388,3 @@ resource "aws_lb_target_group_attachment" "Miniproject-target-group-attachment3"
 
   }
 
-
-# Create HTTPS listener for ALB
-resource "aws_lb_listener" "https_lb_listener" {
-  load_balancer_arn = aws_lb.Miniproject-load-balancer.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.ssl_certificate_arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.Miniproject-target-group.arn
-  }
-}
-
-# Create a redirect of HTTP  to HTTPS
-resource "aws_lb_listener" "http_to_https" {
-  load_balancer_arn = aws_lb.Miniproject-load-balancer.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
