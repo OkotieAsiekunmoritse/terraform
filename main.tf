@@ -214,6 +214,25 @@ resource "aws_security_group" "Miniproject-security-grp-rule" {
   }
 }
 
+
+resource "tls_private_key" "privkey" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+
+resource  "aws_key_pair" "new-key-pair" {
+  key_name = var.ssh_key
+  public_key = tls_private_key.privkey.public_key_openssh
+}
+
+resource "local_file" "ssh_key" {
+  content = tls_private_key.privkey.private_key_pem
+  filename = "${var.ssh_key}.pem"
+  file_permission = "0400"
+}
+
+
+
 # creating instance 1
 
 resource "aws_instance" "instance1" {
@@ -223,7 +242,9 @@ resource "aws_instance" "instance1" {
   security_groups = [aws_security_group.Miniproject-security-grp-rule.id]
   subnet_id       = aws_subnet.Miniproject-public-subnet1.id
   availability_zone = "us-east-1a"
-
+  key_name = "project_key"
+  
+  
   tags = {
     Name   = "Miniproj-instance1"
     source = "terraform"
@@ -235,11 +256,12 @@ resource "aws_instance" "instance1" {
  resource "aws_instance" "instance2" {
   ami             = "ami-0778521d914d23bc1"
   instance_type   = "t2.micro"
-  key_name        = "aws_key_pair.newkey-pair.id"
+  key_name        = "aws_key_pair.nekey_name = "project_key"key-pair.id"
   security_groups = [aws_security_group.Miniproject-security-grp-rule.id]
   subnet_id       = aws_subnet.Miniproject-public-subnet2.id
   availability_zone = "us-east-1b"
-
+  key_name = "project_key"
+  
   tags = {
     Name   = "Miniproj-instance2"
     source = "terraform"
@@ -254,12 +276,14 @@ resource "aws_instance" "instance3" {
   security_groups = [aws_security_group.Miniproject-security-grp-rule.id]
   subnet_id       = aws_subnet.Miniproject-public-subnet3.id
   availability_zone = "us-east-1c"
-
+  key_name = "project_key"
+  
   tags = {
     Name   = "Miniproj-instance3"
     source = "terraform"
   }
 }
+
 
 
 # Create file to store ip addresses for the 3 instances
@@ -272,20 +296,6 @@ ${aws_instance.instance1.public_ip}
 ${aws_instance.instance2.public_ip}
 ${aws_instance.instance3.public_ip}
   EOT
-}
-
-resource "tls_private_key" "privkey" {
-  algorithm = "RSA"
-  rsa_bits = 4096
-}
-
-resource  "aws_key_pair" "newkey-pair" {
-  key_name = "newssh"
-  public_key = "tls_private_key.privkey.public_key_openssh
-
-  provisioner "local-exec" {
-    command = "echo '${tls_private_key.privkey.private_key_pem}' >.aws-key/newssh.pem"
-  }
 }
 
 # Create an Application Load Balancer
